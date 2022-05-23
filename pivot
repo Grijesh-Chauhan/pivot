@@ -1,5 +1,8 @@
 #!/usr/bin/python3
-""" 
+"""
+:Grijesh Chauhan
+:grijesh.mnit@gmail.com
+
 pivot is command line tool to transpose rows into columns
 
 ~$ pivot --help
