@@ -9,6 +9,7 @@ Simple and useful
   $ mv /tmp/repo/pivot ~/bin/.
   $ chmox a+x ~/bin/pivot
   $ echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+  $ source ~/.bashrc 
   $ pivot --examples
 ```
 
