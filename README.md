@@ -7,7 +7,7 @@ Simple and useful
   $ git clone https://github.com/Grijesh-Chauhan/pivot.git /tmp/repo
   $ mkdir ~/bin
   $ mv /tmp/repo/pivot ~/bin/.
-  $ chmox a+x
+  $ chmox a+x ~/bin/pivot
   $ echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
   $ pivot --examples
 ```
