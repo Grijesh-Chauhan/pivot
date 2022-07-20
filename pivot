@@ -1,71 +1,90 @@
 #!/usr/bin/python3
-"""
-:Grijesh Chauhan
-:grijesh.mnit@gmail.com
-
+""" 
 pivot is command line tool to transpose rows into columns
 
-~$ pivot --help
+    ~$ pivot --help
 
-One:
-----------------
-~$ cat dummy.csv
-one, two
-three, four
-five, sixe, zero
-seven, eight
-nine, ten
-~$ cat dummy.csv | pivot
-one,   three,   five,   seven,   nine,
-two    four     sixe,   eight    ten
-                zero
-~$ cat dummy.csv | pivot -F ,
-one   three   five   seven   nine
-two   four    sixe   eight   ten
-              zero
+[One]
 
-Two:
-----------------
-~$ cat example.csv
-"something","a","b","c","d","message"
-"one","1","2","3","4","NA"
-"two","#5","6","","8","world"
-"three","9","10","-1","12","-1"
-," 12"," 12"," 12"," 13"
-"#six"," 1"," 2"," 3"," 4","5"
-~$ cat example.csv | pivot -F ,
-"something"   "one"   "two"     "three"           "#six"
-"a"           "1"     "#5"      "9"       " 12"   " 1"
-"b"           "2"     "6"       "10"      " 12"   " 2"
-"c"           "3"     ""        "-1"      " 12"   " 3"
-"d"           "4"     "8"       "12"      " 13"   " 4"
-"message"     "NA"    "world"   "-1"              "5"
+    $ stat
+    1387461970 647 crw--w---- 1 grijesh tty 268435456 0 "Jul 20 13:25:41 2022" "Jul 20 13:25:41 2022" "Jul 20 13:25:41 2022" "Jan  1 05:30:00 1970" 131072 0 0 (stdin)
+    $ stat | pivot
+    1387461970
+    647
+    crw--w----
+    1
+    grijesh
+    tty
+    268435456
+    0
+    Jul 20 13:24:41 2022
+    Jul 20 13:24:41 2022
+    Jul 20 13:24:41 2022
+    Jan  1 05:30:00 1970
+    131072
+    0
+    0
+    (stdin)
 
-# Passing '","' is bad seprator
-~$ cat example.csv | pivot -F '","'
-something   one   two     three   ," 12   #six
-a           1     #5      9       12      1
-b           2     6       10      12      2
-c           3             -1      13      3
-d           4     8       12              4
-message     NA    world   -1              5
+[Two]
+    ~$ cat dummy.csv
+    one, two
+    three, four
+    five, sixe, zero
+    seven, eight
+    nine, ten
+    ~$ cat dummy.csv | pivot
+    one,   three,   five,   seven,   nine,
+    two    four     sixe,   eight    ten
+                    zero
+    ~$ cat dummy.csv | pivot -F ,
+    one   three   five   seven   nine
+    two   four    sixe   eight   ten
+                  zero
 
-# ',"' is better!
-~$ cat example.csv | pivot -F ',"'
-something   one   two     three        #six
-a           1     #5      9       12   1
-b           2     6       10      12   2
-c           3             -1      12   3
-d           4     8       12      13   4
-message     NA    world   -1           5
+[Three]
+    ~$ cat example.csv
+    "something","a","b","c","d","message"
+    "one","1","2","3","4","NA"
+    "two","#5","6","","8","world"
+    "three","9","10","-1","12","-1"
+    ," 12"," 12"," 12"," 13"
+    "#six"," 1"," 2"," 3"," 4","5"
+    ~$ cat example.csv | pivot -F ,
+    something   one   two     three        #six
+    a           1     #5      9       12   1
+    b           2     6       10      12   2
+    c           3             -1      12   3
+    d           4     8       12      13   4
+    message     NA    world   -1           5
 
-Third
-----------------
-~$ cat example.csv | pivot -F ',"' -c -n -s
+    Pivot command also accepts multichar sperator
+
+    Though for this CSV,'","' is bad seprator
+    ~$ cat example.csv | pivot -F '","'
+    something   one   two     three   ," 12   #six
+    a           1     #5      9       12      1
+    b           2     6       10      12      2
+    c           3             -1      13      3
+    d           4     8       12              4
+    message     NA    world   -1              5
+
+    You can use ',"'
+    ~$ cat example.csv | pivot -F ',"'
+    something   one   two     three        #six
+    a           1     #5      9       12   1
+    b           2     6       10      12   2
+    c           3             -1      12   3
+    d           4     8       12      13   4
+    message     NA    world   -1           5
+
+[Four]
+    ~$ cat example.csv | pivot -F ',"' -c -n -s
 """
 
-import sys, os
 import argparse
+import sys, os
+import csv
 from itertools import zip_longest
 from operator import itemgetter
 from string import whitespace
@@ -87,10 +106,18 @@ def argparser(args):
         sys.exit(__doc__)
     return parsed
 
+# csv does not work for multichars seprator, though this code work with best of its judgement
+def readlines(sep):
+    if len(sep) == 1:
+        splitedlines = csv.reader(sys.stdin, delimiter=sep)
+    else:
+        splitedlines = (line.split(sep) for line in sys.stdin)
+    chars =  whitespace + "".join({'"', "'"} & {*sep})
+    return ((s.strip(chars) for s in line) for line in splitedlines)
+
 def pivot(sep=' '):
     """ read each line as tuple and transpose """
-    chars =  whitespace + "".join({'"', "'"} & {*sep}) 
-    lines = ((s.strip(chars) for s in line.split(sep)) for line in sys.stdin)
+    lines = readlines(sep) 
     plines = [*zip_longest(*lines, fillvalue=" ")]
     if not plines:
         sys.exit(f"{os.path.basename(sys.argv[0])}: no value")
