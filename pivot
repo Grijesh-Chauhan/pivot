@@ -88,9 +88,34 @@ import csv
 from itertools import zip_longest
 from operator import itemgetter
 from string import whitespace
+import textwrap
+
+bashinlinecode = r"""
+    function grepivot {
+        if [ "$1" = '-h' ]; then
+            printf "usage: selects lines that match pattern in CSV and pivot in color"
+            printf "\nexample:\n\tgrepivot three example.csv"
+            echo
+            return
+        fi
+        pattern="$1"
+        csvfile="$2"
+        awk  'NR == 1 || /'"$pattern"'/' $csvfile | pivot -F, -c
+    }
+"""
+
+try:
+    from pygments import highlight, lexers, formatters
+    bashinlinecode = highlight(bashinlinecode, lexers.BashLexer(),
+                               formatters.TerminalFormatter())
+except Exception as workswithouthighlighting:
+    pass
 
 def argparser(args):
-    parser = argparse.ArgumentParser(description='Pivot CSV like data for vertical view')
+    additional_help_text = f"\nSide note: copy below code add paste either on console or in bashrc for quick:\n\n {bashinlinecode}"
+    parser = argparse.ArgumentParser(description='Pivot CSV like data for vertical view',
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog=textwrap.dedent(additional_help_text))
     parser.add_argument('-F', metavar='field separator', dest='fseparator', 
                         help=('field separator to split line into seprate words, '
                               '-F are NOT regex'))
